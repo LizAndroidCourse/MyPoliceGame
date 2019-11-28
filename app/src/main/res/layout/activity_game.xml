@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:id="@+id/relativeLayout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Game"
+    android:keepScreenOn="true"
+    android:background="@drawable/road_background"
+    >
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:background="@color/transparent"/>
+
+    <Button
+        android:id="@+id/left_BTN"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@id/view"
+        android:background="@color/transparent"
+        android:textColor="@color/white"
+        android:text="Left" />
+
+    <Button
+        android:id="@+id/right_BTN"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@id/view"
+        android:textColor="@color/white"
+        android:background="@color/transparent"
+        android:text="Right"
+        />
+
+
+    <LinearLayout
+        android:id="@+id/liner"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+
+        >
+        <ImageView
+            android:id="@+id/heart1"
+            android:layout_width="35dp"
+            android:layout_height="50dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            app:srcCompat="@drawable/heart" />
+        <ImageView
+            android:id="@+id/heart2"
+            android:layout_width="35dp"
+            android:layout_height="50dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            app:srcCompat="@drawable/heart" />
+        <ImageView
+            android:id="@+id/heart3"
+            android:layout_width="35dp"
+            android:layout_height="50dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            app:srcCompat="@drawable/heart" />
+    </LinearLayout>
+
+<!--        <ImageView-->
+<!--            android:id="@+id/police_car"-->
+<!--            android:layout_centerHorizontal="true"-->
+<!--            android:layout_width="80dp"-->
+<!--            android:layout_height="100dp"-->
+<!--            />-->
+<!--        <ImageView-->
+<!--            android:id="@+id/red_car"-->
+<!--            android:layout_width="80dp"-->
+<!--            android:layout_height="100dp"-->
+<!--            app:srcCompat="@drawable/car"-->
+<!--                android:layout_marginBottom="50dp"-->
+<!--                android:layout_alignParentBottom="true"-->
+<!--                android:layout_centerHorizontal="true"/>-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/score_LBL"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Score: "
+            android:textSize="35dp"
+            />
+
+        <TextView
+            android:id="@+id/score_INT"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textSize="35dp"
+            />
+    </LinearLayout>
+
+
+</RelativeLayout>
+
