@@ -30,5 +30,6 @@ public class EndGameScreen extends AppCompatActivity {
     public void  moveToMain(){
         Intent intent = new Intent(this, MainScreen.class);
         startActivity(intent);
+        this.finish();
     }
 }

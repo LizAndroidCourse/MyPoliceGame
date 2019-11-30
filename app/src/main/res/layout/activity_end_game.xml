@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".EndGameScreen"
-    android:background="@drawable/main_background">
+    android:background="@drawable/game_over_logo">
 
 
     <Button
@@ -26,8 +26,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="50dp"
-        android:textColor="@color/white"
-        android:layout_marginTop="30dp"
+        android:textColor="@color/colorPrimaryDark"
+        android:layout_marginTop="20dp"
         android:text="Your score:" />
 
     <TextView
@@ -41,6 +41,8 @@
 
 
 </LinearLayout>
+
+
 
 
 </RelativeLayout>
