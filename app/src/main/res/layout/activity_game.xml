@@ -73,21 +73,6 @@
             app:srcCompat="@drawable/heart" />
     </LinearLayout>
 
-<!--        <ImageView-->
-<!--            android:id="@+id/police_car"-->
-<!--            android:layout_centerHorizontal="true"-->
-<!--            android:layout_width="80dp"-->
-<!--            android:layout_height="100dp"-->
-<!--            />-->
-<!--        <ImageView-->
-<!--            android:id="@+id/red_car"-->
-<!--            android:layout_width="80dp"-->
-<!--            android:layout_height="100dp"-->
-<!--            app:srcCompat="@drawable/car"-->
-<!--                android:layout_marginBottom="50dp"-->
-<!--                android:layout_alignParentBottom="true"-->
-<!--                android:layout_centerHorizontal="true"/>-->
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">

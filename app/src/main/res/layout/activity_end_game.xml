@@ -8,12 +8,15 @@
     android:background="@drawable/game_over_logo">
 
 
+
     <Button
         android:id="@+id/main_BTN"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:background="@color/transparent"
-        android:paddingBottom="130dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:paddingBottom="90dp"
         android:text="Back to main"
         android:textSize="40dp" />
 
@@ -26,8 +29,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="50dp"
+        android:paddingLeft="40dp"
         android:textColor="@color/colorPrimaryDark"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="40dp"
         android:text="Your score:" />
 
     <TextView
@@ -35,14 +39,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="50dp"
-        android:textColor="@color/white"
-        android:layout_marginTop="30dp"
+        android:textColor="@color/colorPrimaryDark"
+        android:layout_marginTop="40dp"
         android:text=" " />
 
 
 </LinearLayout>
-
-
 
 
 </RelativeLayout>

@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainScreen"
-    android:background="@drawable/main_background">
+    android:background="@drawable/backgroun_main">
 
 
 
@@ -48,13 +48,3 @@
 
 
 </RelativeLayout>
-
-<!--<Button-->
-<!--android:id="@+id/fast_BTN"-->
-<!--android:layout_width="wrap_content"-->
-<!--android:layout_height="wrap_content"-->
-<!--android:layout_below="@id/Low_BTN"-->
-<!--android:layout_centerHorizontal="true"-->
-<!--android:layout_marginTop="40dp"-->
-<!--android:background="false"-->
-<!--android:text="Fast"/>-->

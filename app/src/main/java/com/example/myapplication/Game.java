@@ -24,32 +24,54 @@ import java.util.Random;
 
 public class Game extends AppCompatActivity {
 
+    //view objects
     private Button right_BTN;
     private Button left_BTN;
-    private int gamePaths = 3;
     private ImageView[] heartArry;
-    int countLife = 3;
     private ImageView red_car;
     private ImageView imageView_police;
+    private TextView score_LBL;
+    // screen size parameters
     int sizeX, sizeY;
     Display display;
     Handler handler;
     Point size;
+    RelativeLayout relativeLayout;
+    //game utilities
+    int gamePaths = 3;
     Runnable game_runnable;
     Runnable init_police_runnable;
     int dp_layout_width_police = 100;
     int dp_layout_height_police = 80;
-    int score = 0;
-    RelativeLayout relativeLayout;
-    TextView score_LBL;
+    int score = 1;
+    int policeSpeed = 10;
+    int countLife = 3;
+    boolean is_game_stopped = false;
     Random random = new Random();
     ArrayList<ImageView> PoliceQ;
-    boolean playing;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+        initVars();
+        initPolices();
+        gameLoop();
+        left_BTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clickLeft();
+            }
+        });
+        right_BTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clickRight();
+            }
+        });
+    }
+
+    public void initVars(){
         heartArry = new ImageView[]{
                 findViewById(R.id.heart1),
                 findViewById(R.id.heart2),
@@ -65,22 +87,8 @@ public class Game extends AppCompatActivity {
         right_BTN = findViewById(R.id.right_BTN);
         score_LBL = findViewById(R.id.score_INT);
         PoliceQ = new ArrayList<ImageView>();
-        left_BTN.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                clickLeft();
-            }
-        });
-        right_BTN.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                clickRight();
-            }
-        });
         red_car = new ImageView(this);
         initRedCar(red_car);
-        initPolices();
-        gameLoop();
     }
 
     public void initRedCar(ImageView red_car) {
@@ -109,9 +117,11 @@ public class Game extends AppCompatActivity {
         params.height = convertDPToInt(dp_layout_height_police);
         params.weight = convertDPToInt(dp_layout_width_police);
         int rand_col = random.nextInt(3) - 1;//random number to set the police
-        if(PoliceQ.size()>2){
-            do{rand_col=random.nextInt(3) - 1;}
-        while ((((sizeX / gamePaths) * rand_col) == PoliceQ.get(PoliceQ.size() - 1).getX()));}
+        if (!PoliceQ.isEmpty()) {// Check that the police car does not leave one after the other in the same row
+            while ((((sizeX / gamePaths) * rand_col) == (int) PoliceQ.get(PoliceQ.size() - 1).getX())) {
+                rand_col = random.nextInt(3) - 1;
+            }
+        }
         relativeLayout.addView(imageView_police, params);
         imageView_police.setX((sizeX / gamePaths) * rand_col);
         imageView_police.setY(0);
@@ -126,10 +136,11 @@ public class Game extends AppCompatActivity {
             public void run() {
                 initPolices();
                 addPolice();
-                getScore();
+                setScore();
             }
         };
-        handler.postDelayed(init_police_runnable, (1000 + random.nextInt(3000)));
+        if (!is_game_stopped)
+            handler.postDelayed(init_police_runnable, (1000 + random.nextInt(3000)));
     }
 
     public void gameLoop() {
@@ -142,7 +153,13 @@ public class Game extends AppCompatActivity {
                 checkIfClash();
             }
         };
-        handler.postDelayed(game_runnable, 30);
+        if (!is_game_stopped) {
+            if(score%10<3){
+                setScore();
+                policeSpeed += 1;
+            }
+            handler.postDelayed(game_runnable, 30);
+        }
     }
 
     public void checkIfClash() {
@@ -155,8 +172,8 @@ public class Game extends AppCompatActivity {
         }
     }
 
-    public void getScore() {
-        score += 5;
+    public void setScore() {
+        score += 1;
         score_LBL.setText("" + score);
     }
 
@@ -178,10 +195,10 @@ public class Game extends AppCompatActivity {
         for (int i = 0; i < PoliceQ.size(); i++) {
             if (PoliceQ.get(i) != null) {
                 if (PoliceQ.get(i).getY() + 10 < (red_car.getY())) {
-                    PoliceQ.get(i).setY(PoliceQ.get(i).getY() + 10);
+                    PoliceQ.get(i).setY(PoliceQ.get(i).getY() + policeSpeed);
                 } else {
                     score += 2;
-                    score_LBL.setText(""+score);
+                    score_LBL.setText("" + score);
                     PoliceQ.get(i).setImageResource(0);
                     PoliceQ.remove(i);
                 }
@@ -190,8 +207,10 @@ public class Game extends AppCompatActivity {
     }
 
     public void removeHeart() {
-        if (countLife == 1)
-            gameOver();
+        if (countLife == 1) {
+            is_game_stopped = true;
+            moveToGameOverScreen();
+        }
         if (countLife == 2) {
             countLife--;
             heartArry[1].setVisibility(View.INVISIBLE);
@@ -202,29 +221,25 @@ public class Game extends AppCompatActivity {
         }
     }
 
-    public void gameOver() {
+    public void moveToGameOverScreen() {
         Intent intent = new Intent(this, EndGameScreen.class);
         intent.putExtra("SCORE", score);
         startActivity(intent);
-        handler.removeCallbacks(init_police_runnable);
-        handler.removeCallbacks(game_runnable);
         this.finish();
 
     }
 
     @Override
     protected void onPause() {
-        playing = false;
-        handler.removeCallbacks(init_police_runnable);
-        handler.removeCallbacks(game_runnable);
+        is_game_stopped = true;
         super.onPause();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (playing == false) {
-            playing = true;
+        if (is_game_stopped) {
+            is_game_stopped = false;
             initPolices();
             gameLoop();
         }
