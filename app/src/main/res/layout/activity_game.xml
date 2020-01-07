@@ -8,6 +8,7 @@
     android:layout_height="match_parent"
     tools:context=".Game"
     android:keepScreenOn="true"
+    android:orientation="vertical"
     android:background="@drawable/road_background"
     >
 
@@ -20,13 +21,14 @@
 
     <Button
         android:id="@+id/left_BTN"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:layout_alignParentBottom="true"
         android:layout_alignLeft="@id/view"
         android:background="@color/transparent"
         android:textColor="@color/white"
-        android:text="Left" />
+        android:text="Left"
+        android:paddingBottom="0dp"/>
 
     <Button
         android:id="@+id/right_BTN"

@@ -2,27 +2,33 @@ package com.example.myapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Point;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
+import android.util.FloatMath;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.View;
 import android.widget.Button;
-import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
+
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Game extends AppCompatActivity {
+public class Game extends AppCompatActivity implements SensorEventListener {
 
     //view objects
     private Button right_BTN;
@@ -30,25 +36,39 @@ public class Game extends AppCompatActivity {
     private ImageView[] heartArry;
     private ImageView red_car;
     private ImageView imageView_police;
+    private ImageView imageView_coin;
     private TextView score_LBL;
+    final private int MANUAL_MODE = 1 ;
     // screen size parameters
     int sizeX, sizeY;
     Display display;
     Handler handler;
     Point size;
     RelativeLayout relativeLayout;
+    //sensor paramters
+    private float[] mGravity;
+    private float mAccel;
+    private float mAccelCurrent;
+    private float mAccelLast;
+    SensorManager moving_controller;
+    Sensor sensor;
     //game utilities
-    int gamePaths = 3;
+    int gamePaths = 5;
     Runnable game_runnable;
     Runnable init_police_runnable;
-    int dp_layout_width_police = 100;
     int dp_layout_height_police = 80;
     int score = 1;
     int policeSpeed = 10;
+    int policeRatio = 1000;
     int countLife = 3;
+    int mode;
     boolean is_game_stopped = false;
     Random random = new Random();
-    ArrayList<ImageView> PoliceQ;
+    ArrayList<ImageView> policeQ;
+    ArrayList<ImageView> coinQ;
+    MediaPlayer mediaPlayerCrash;
+    MediaPlayer mediaPlayerCoin;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +77,28 @@ public class Game extends AppCompatActivity {
         initVars();
         initPolices();
         gameLoop();
+        mode = getIntent().getIntExtra("MODE",MANUAL_MODE);
+        if(mode == MANUAL_MODE){
+            manualMode();
+        }else{
+            sensorMode();
+        }
+
+    }
+
+    public void sensorMode(){
+        left_BTN.setVisibility(View.INVISIBLE);
+        right_BTN.setVisibility(View.INVISIBLE);
+        //declaring Sensor Manager and sensor type
+        moving_controller = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensor = moving_controller.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        moving_controller.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+        mAccel = 0.00f;
+        mAccelCurrent = SensorManager.GRAVITY_EARTH;
+        mAccelLast = SensorManager.GRAVITY_EARTH;
+    }
+    public void manualMode(){
+
         left_BTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -70,8 +112,7 @@ public class Game extends AppCompatActivity {
             }
         });
     }
-
-    public void initVars(){
+    public void initVars() {
         heartArry = new ImageView[]{
                 findViewById(R.id.heart1),
                 findViewById(R.id.heart2),
@@ -86,21 +127,69 @@ public class Game extends AppCompatActivity {
         left_BTN = findViewById(R.id.left_BTN);
         right_BTN = findViewById(R.id.right_BTN);
         score_LBL = findViewById(R.id.score_INT);
-        PoliceQ = new ArrayList<ImageView>();
+        policeQ = new ArrayList<>();
+        coinQ = new ArrayList<>();
         red_car = new ImageView(this);
         initRedCar(red_car);
+       mediaPlayerCrash = MediaPlayer.create(getApplicationContext(), R.raw.crash_sound);
+        mediaPlayerCoin = MediaPlayer.create(getApplicationContext(), R.raw.coin_sound);
+
     }
+
 
     public void initRedCar(ImageView red_car) {
         red_car.setImageResource(R.drawable.car);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                GridLayout.LayoutParams.WRAP_CONTENT, GridLayout.LayoutParams.MATCH_PARENT);
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         params.height = convertDPToInt(dp_layout_height_police);
-        params.weight = convertDPToInt(dp_layout_width_police);
+       red_car.setLayoutParams(params);
+        params.width = sizeX / gamePaths;
         relativeLayout.addView(red_car, params);
-        red_car.setX((sizeX / gamePaths) * 0);
+        red_car.setX(sizeX / gamePaths);
         red_car.setY(sizeY - red_car.getHeight() - 300);
         red_car.setVisibility(View.VISIBLE);
+
+    }
+
+    public void addPolice() {
+        imageView_police = new ImageView(this);
+        imageView_police.setImageResource(R.drawable.police);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+        params.height = convertDPToInt(dp_layout_height_police);
+        params.width = sizeX / gamePaths;
+        int rand_col = random.nextInt(gamePaths);//random number to set the police
+        if (!policeQ.isEmpty()) {// Check that the police car does not leave one after the other in the same row
+            while ((((sizeX / gamePaths) * rand_col) == (int) policeQ.get(policeQ.size() - 1).getX()) ||
+                    ((((sizeX / gamePaths) * rand_col) == (int) policeQ.get(policeQ.size() - 1).getY()))) {
+                rand_col = random.nextInt(3);
+            }
+        }
+        relativeLayout.addView(imageView_police, params);
+        imageView_police.setX((sizeX / gamePaths) * rand_col);
+        imageView_police.setY(0);
+        imageView_police.setVisibility(View.VISIBLE);
+        policeQ.add(imageView_police);
+    }
+    public void addCoin() {
+        imageView_coin = new ImageView(this);
+        imageView_coin.setImageResource(R.drawable.coin);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+        params.height = convertDPToInt(dp_layout_height_police);
+        params.width = sizeX / gamePaths;
+        int rand_col = random.nextInt(gamePaths);//random number to set the police
+        if (!coinQ.isEmpty()) {// Check that the police car does not leave one after the other in the same row
+            while ((((sizeX / gamePaths) * rand_col) == (int) coinQ.get(coinQ.size() - 1).getX()) ||
+                    ((((sizeX / gamePaths) * rand_col) == (int) coinQ.get(coinQ.size() - 1).getY()))) {
+                rand_col = random.nextInt(3);
+            }
+        }
+        relativeLayout.addView(imageView_coin, params);
+        imageView_coin.setX((sizeX / gamePaths) * rand_col);
+        imageView_coin.setY(0);
+        imageView_coin.setVisibility(View.VISIBLE);
+        coinQ.add(imageView_coin);
     }
 
     public int convertDPToInt(int dp) {
@@ -109,38 +198,25 @@ public class Game extends AppCompatActivity {
                 TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
     }
 
-    public void addPolice() {
-        imageView_police = new ImageView(this);
-        imageView_police.setImageResource(R.drawable.police);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                GridLayout.LayoutParams.WRAP_CONTENT, GridLayout.LayoutParams.MATCH_PARENT);
-        params.height = convertDPToInt(dp_layout_height_police);
-        params.weight = convertDPToInt(dp_layout_width_police);
-        int rand_col = random.nextInt(3) - 1;//random number to set the police
-        if (!PoliceQ.isEmpty()) {// Check that the police car does not leave one after the other in the same row
-            while ((((sizeX / gamePaths) * rand_col) == (int) PoliceQ.get(PoliceQ.size() - 1).getX())) {
-                rand_col = random.nextInt(3) - 1;
-            }
-        }
-        relativeLayout.addView(imageView_police, params);
-        imageView_police.setX((sizeX / gamePaths) * rand_col);
-        imageView_police.setY(0);
-        imageView_police.setVisibility(View.VISIBLE);
-        PoliceQ.add(imageView_police);
-    }
-
     public void initPolices() {
         handler = new Handler();
         init_police_runnable = new Runnable() {
             @Override
             public void run() {
                 initPolices();
-                addPolice();
+                Random randomActor = new Random();
+                int random_int = randomActor.nextInt(2);
+                if(random_int == 1){
+                    addPolice();
+                }
+                else{
+                    addCoin();
+                }
                 setScore();
             }
         };
         if (!is_game_stopped)
-            handler.postDelayed(init_police_runnable, (1000 + random.nextInt(3000)));
+            handler.postDelayed(init_police_runnable, (policeRatio + random.nextInt(1000)));
     }
 
     public void gameLoop() {
@@ -149,27 +225,39 @@ public class Game extends AppCompatActivity {
             @Override
             public void run() {
                 gameLoop();
-                policePosition();
+                actorsPosition();
                 checkIfClash();
             }
         };
         if (!is_game_stopped) {
-            if(score%10<3){
+            if (score % 10 < 3) {
                 setScore();
                 policeSpeed += 1;
+                if (policeRatio < 0) {
+                    policeRatio -= 100;
+                }
             }
             handler.postDelayed(game_runnable, 30);
         }
     }
 
     public void checkIfClash() {
-        if (!PoliceQ.isEmpty()) {
-            if (PoliceQ.get(0).getX() == red_car.getX() && PoliceQ.get(0).getY() >= red_car.getY() - red_car.getHeight()) {
-                PoliceQ.get(0).setVisibility(View.INVISIBLE);
-                PoliceQ.remove(0);
+        if (!policeQ.isEmpty()) {
+            if (policeQ.get(0).getX() == red_car.getX() && policeQ.get(0).getY() >= red_car.getY() - red_car.getHeight()) {
                 removeHeart();
+                //   mediaPlayerCrash.start();             }
+                policeQ.get(0).setVisibility(View.INVISIBLE);
+                policeQ.remove(0);
             }
         }
+        if (!coinQ.isEmpty()){
+            if (coinQ.get(0).getX() == red_car.getX() && coinQ.get(0).getY() >= red_car.getY() - red_car.getHeight()) {
+                score+=5;
+                //mediaPlayerCoin.start();
+                coinQ.get(0).setVisibility(View.INVISIBLE);
+                coinQ.remove(0);
+
+            }   }
     }
 
     public void setScore() {
@@ -177,30 +265,71 @@ public class Game extends AppCompatActivity {
         score_LBL.setText("" + score);
     }
 
+    @Override
+    public void onAccuracyChanged(Sensor arg0, int arg1) {
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        float u = event.values[0];
+        float v = event.values[1];
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
+            mGravity = event.values.clone();
+            // Shake detection
+            float x = mGravity[0];
+            float y = mGravity[1];
+            float z = mGravity[2];
+            mAccelLast = mAccelCurrent;
+            mAccelCurrent = (float)Math.sqrt(x*x + y*y + z*z);
+            float delta = mAccelCurrent - mAccelLast;
+            mAccel = mAccel * 0.9f + delta;}
+
+        if (Math.abs(u) > Math.abs(v)) {
+            if (u < 0) {
+                clickRight();
+            }
+            if (u > 0) {
+                clickLeft();
+            }
+        } else {
+
+        }
+    }
+
     public void clickLeft() {
         score++;
-        System.out.println("car X" + red_car.getX());
-        if (0 < red_car.getX() + (sizeX / gamePaths))
+        if (red_car.getX() > 0)
             red_car.setX(red_car.getX() - (sizeX / gamePaths));
     }
 
     public void clickRight() {
         score++;
-        System.out.println("Width" + red_car.getWidth());
-        if (sizeX - 400 > red_car.getX() + (sizeX / gamePaths))
+        if (red_car.getX() < sizeX - red_car.getWidth())
             red_car.setX(red_car.getX() + (sizeX / gamePaths));
     }
 
-    public void policePosition() {
-        for (int i = 0; i < PoliceQ.size(); i++) {
-            if (PoliceQ.get(i) != null) {
-                if (PoliceQ.get(i).getY() + 10 < (red_car.getY())) {
-                    PoliceQ.get(i).setY(PoliceQ.get(i).getY() + policeSpeed);
+    public void actorsPosition() {
+        for (int i = 0; i < policeQ.size(); i++) {
+            if (policeQ.get(i) != null) {
+                if (policeQ.get(i).getY() + 10 < (red_car.getY())) {
+                    policeQ.get(i).setY(policeQ.get(i).getY() + policeSpeed);
                 } else {
                     score += 2;
                     score_LBL.setText("" + score);
-                    PoliceQ.get(i).setImageResource(0);
-                    PoliceQ.remove(i);
+                    policeQ.get(i).setImageResource(0);
+                    policeQ.remove(i);
+                }
+            }
+        }
+        for (int i = 0; i < coinQ.size(); i++) {
+            if (coinQ.get(i) != null) {
+                if (coinQ.get(i).getY() + 10 < (red_car.getY())) {
+                    coinQ.get(i).setY(coinQ.get(i).getY() + policeSpeed);
+                } else {
+                    score += 2;
+                    score_LBL.setText("" + score);
+                    coinQ.get(i).setImageResource(0);
+                    coinQ.remove(i);
                 }
             }
         }
@@ -232,6 +361,10 @@ public class Game extends AppCompatActivity {
     @Override
     protected void onPause() {
         is_game_stopped = true;
+        //unregister Sensor listener
+        if(mode != MANUAL_MODE) {
+            moving_controller.unregisterListener(this, sensor);
+        }
         super.onPause();
     }
 
@@ -240,6 +373,9 @@ public class Game extends AppCompatActivity {
         super.onResume();
         if (is_game_stopped) {
             is_game_stopped = false;
+            if(mode!=MANUAL_MODE) {
+                moving_controller.registerListener(this, sensor, SensorManager.SENSOR_DELAY_GAME);
+            }
             initPolices();
             gameLoop();
         }

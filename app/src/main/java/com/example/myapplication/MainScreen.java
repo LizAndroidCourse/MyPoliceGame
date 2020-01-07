@@ -6,25 +6,32 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.os.Bundle;
 import android.widget.Button;
-import android.widget.TextView;
+
 
 public class MainScreen extends AppCompatActivity {
 
-    private Button start_BTN;
+    final private int SENSOR_MODE = 0 ;
+    final private int MANUAL_MODE = 1 ;
+    private Button sensor_BTN;
+    private Button manual_BTN;
     private Button exit_BTN;
 
-    int count = 0;
-    @Override
+     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        start_BTN = findViewById(R.id.Start_BTN);
-        start_BTN.setOnClickListener(new OnClickListener() {
+         setContentView(R.layout.activity_main);
+        sensor_BTN = findViewById(R.id.sensor_button);
+        sensor_BTN.setOnClickListener(new OnClickListener() {
             public void onClick(View v)
             {
-                openNewActivity();
+                openSensorActivity();
             } });
+         manual_BTN = findViewById(R.id.manual_button);
+         manual_BTN.setOnClickListener(new OnClickListener() {
+             public void onClick(View v)
+             {
+                 openManualActivity();
+             } });
         exit_BTN=findViewById(R.id.Exit_BTN);
         exit_BTN.setOnClickListener(new OnClickListener() {
             @Override
@@ -34,10 +41,16 @@ public class MainScreen extends AppCompatActivity {
         });
     }
 
-    public void openNewActivity(){
+    public void openSensorActivity(){
         Intent intent = new Intent(this, Game.class);
+        intent.putExtra("MODE", SENSOR_MODE);
         startActivity(intent);
         this.finish();
     }
-
+    public void openManualActivity(){
+        Intent intent = new Intent(this, Game.class);
+        intent.putExtra("MODE", MANUAL_MODE);
+        startActivity(intent);
+        this.finish();
+    }
 }
