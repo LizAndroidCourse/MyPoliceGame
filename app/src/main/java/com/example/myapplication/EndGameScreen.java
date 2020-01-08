@@ -88,12 +88,15 @@ public class EndGameScreen extends AppCompatActivity {
         String strFromJson = mySharedPreferences.getString(SCORE_KEY,null);
         Gson gson = new Gson();
         scoresList = gson.fromJson(strFromJson, ScoresList.class);
+        if(scoresList == null){
+            scoresList = new ScoresList();
+        }
         current_score = new Score();
         current_score.score = score;
         boolean isTopten = scoresList.isTopTen(current_score);
         Log.d("isTopTen", isTopten+" ");
 
-        if (isTopten == true) {
+        if (isTopten) {
             current_location = fetchLocation();
             current_score.setLat(current_location.getLatitude());
             current_score.setLng(current_location.getLongitude());
@@ -162,8 +165,6 @@ public class EndGameScreen extends AppCompatActivity {
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            // Permission is not granted
-            // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     android.Manifest.permission.ACCESS_FINE_LOCATION)) {
                 // Show an explanation to the user asynchronously -- don't block

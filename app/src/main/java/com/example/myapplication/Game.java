@@ -59,9 +59,10 @@ public class Game extends AppCompatActivity implements SensorEventListener {
     int dp_layout_height_police = 80;
     int score = 1;
     int policeSpeed = 10;
-    int policeRatio = 1000;
+    int policeRatio ;
     int countLife = 3;
     int mode;
+    int widthPath;
     boolean is_game_stopped = false;
     Random random = new Random();
     ArrayList<ImageView> policeQ;
@@ -98,7 +99,7 @@ public class Game extends AppCompatActivity implements SensorEventListener {
         mAccelLast = SensorManager.GRAVITY_EARTH;
     }
     public void manualMode(){
-
+        policeRatio = 800;
         left_BTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -124,6 +125,7 @@ public class Game extends AppCompatActivity implements SensorEventListener {
         display.getSize(size);
         sizeX = size.x;
         sizeY = size.y;
+        widthPath = sizeX/gamePaths;
         left_BTN = findViewById(R.id.left_BTN);
         right_BTN = findViewById(R.id.right_BTN);
         score_LBL = findViewById(R.id.score_INT);
@@ -234,7 +236,7 @@ public class Game extends AppCompatActivity implements SensorEventListener {
                 setScore();
                 policeSpeed += 1;
                 if (policeRatio < 0) {
-                    policeRatio -= 100;
+                    policeRatio -= 80;
                 }
             }
             handler.postDelayed(game_runnable, 30);
@@ -285,14 +287,21 @@ public class Game extends AppCompatActivity implements SensorEventListener {
             mAccel = mAccel * 0.9f + delta;}
 
         if (Math.abs(u) > Math.abs(v)) {
-            if (u < 0) {
-                clickRight();
+            if (u > -10 && u < -6) {
+                red_car.setX(4*widthPath);
             }
-            if (u > 0) {
-                clickLeft();
+            if (u > -6 && u < -2) {
+                red_car.setX(3*widthPath);
             }
-        } else {
-
+            if(u > -2 && u < 2){
+                red_car.setX(2*widthPath);
+            }
+            if (u>2 && u<6){
+                red_car.setX(widthPath);
+            }
+            if(u>6&& u<10){
+                red_car.setX(0);
+            }
         }
     }
 
